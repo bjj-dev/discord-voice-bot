@@ -52,6 +52,7 @@ client.once("ready", () => {
 });
 
 client.on("voiceStateUpdate", async (oldState, newState) => {
+    console.log("상태 변경 감지됨!");
     if (!oldState.channelId && newState.channelId) {
         const userId = newState.member.id;
         const userDisplayName = newState.member.displayName;
