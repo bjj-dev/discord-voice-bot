@@ -17,6 +17,7 @@ const client = new Client({
         GatewayIntentBits.MessageContent
     ]
 });
+
 // 1. 특정 친구 전용 멘트
 const customMentions = {
     "349680428723994624": "주인님 어서오세요! 오늘 컨디션 어떠신가요? 🫡",
@@ -63,7 +64,6 @@ client.on("error", (error) => {
     console.error("❌ 클라이언트 에러 발생:", error);
 });
 
-client.on("debug", info => console.log(`[디버그] ${info}`));
 
 client.on("voiceStateUpdate", async (oldState, newState) => {
     console.log(`[이벤트] ${newState.member.displayName}: ${oldState.channelId || '없음'} -> ${newState.channelId || '없음'}`);
@@ -97,17 +97,19 @@ client.on("voiceStateUpdate", async (oldState, newState) => {
         }
     }
 });
-const startBot = async () => {
+app.listen(PORT, () => {
+    console.log(`[Express] Listening on port ${PORT}`);
+});
+const loginBot = async () => {
     try {
         console.log("⏳ 디스코드 로그인 시도 중...");
+        // 디버그 모드 활성화 (이미 넣으신 부분)
+        client.on("debug", info => console.log(`[디버그] ${info}`));
+        
         await client.login(TOKEN);
-        // 로그인이 성공한 후에만 포트를 엽니다.
-        app.listen(PORT, () => console.log(`[Express] Listening on port ${PORT}`));
     } catch (err) {
-        console.error("❌ 로그인 과정에서 치명적 오류 발생:");
-        console.error(err);
-        // 에러가 나면 프로세스를 종료하여 Render가 재시작하게 만듭니다.
-        process.exit(1); 
+        console.error("❌ 로그인 실패 원인:", err.message);
     }
 };
-startBot();
+
+loginBot();
