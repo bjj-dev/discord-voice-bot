@@ -9,20 +9,8 @@ app.get("/", (req, res) => res.send("Bot is alive!"));
 const TOKEN = process.env.BOT_TOKEN;
 const TEXT_CHANNEL_ID = "1313443293153067018";
 
-const client = new Client({
-    intents: [
-        GatewayIntentBits.Guilds,
-        GatewayIntentBits.GuildVoiceStates,
-        GatewayIntentBits.GuildMessages,
-        GatewayIntentBits.MessageContent
-    ],
-    // [중요] 연결 안정성을 위한 파셜 및 타이머 설정
-    partials: [Partials.Channel, Partials.GuildMember, Partials.User],
-    rest: { 
-        timeout: 60000, // 응답 대기 시간을 60초로 늘림
-        retries: 5      // 실패 시 재시도 횟수 증가
-    }
-});
+const client = new Client({ intents: [GatewayIntentBits.Guilds], partials: [Partials.Channel] }); 
+
 client.on("debug", info => console.log(`[디버그] ${info}`));
 // 1. 특정 친구 전용 멘트
 const customMentions = {
