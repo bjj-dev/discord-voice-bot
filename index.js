@@ -15,9 +15,11 @@ const client = new Client({
         GatewayIntentBits.GuildVoiceStates,
         GatewayIntentBits.GuildMessages,
         GatewayIntentBits.MessageContent
-    ]
+    ],
+    // 연결 타임아웃 및 재시도 옵션 추가
+    rest: { timeout: 60000 },
+    sweepers: { ...Options.DefaultSweeperSettings }
 });
-
 // 1. 특정 친구 전용 멘트
 const customMentions = {
     "349680428723994624": "주인님 어서오세요! 오늘 컨디션 어떠신가요? 🫡",
