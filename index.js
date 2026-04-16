@@ -1,3 +1,4 @@
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'; // 로컬/특정 환경 테스트용 (권장되지는 않으나 연결 확인용)
 const { Client, GatewayIntentBits, Partials } = require("discord.js");
 const express = require("express");
 
