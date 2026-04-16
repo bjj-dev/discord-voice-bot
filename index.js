@@ -5,7 +5,6 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.get("/", (req, res) => res.send("Bot is alive!"));
-app.listen(PORT, () => console.log(`Listening on port ${PORT}`));
 
 const TOKEN = process.env.BOT_TOKEN;
 const TEXT_CHANNEL_ID = "1313443293153067018";
@@ -64,6 +63,7 @@ client.on("error", (error) => {
     console.error("❌ 클라이언트 에러 발생:", error);
 });
 
+client.on("debug", info => console.log(`[디버그] ${info}`));
 
 client.on("voiceStateUpdate", async (oldState, newState) => {
     console.log(`[이벤트] ${newState.member.displayName}: ${oldState.channelId || '없음'} -> ${newState.channelId || '없음'}`);
@@ -97,8 +97,17 @@ client.on("voiceStateUpdate", async (oldState, newState) => {
         }
     }
 });
-console.log("⏳ 디스코드 로그인 시도 중...");
-client.login(TOKEN).catch(err => {
-    console.error("❌ 로그인 실패! 토큰이 잘못되었거나 인텐트 설정 문제입니다.");
-    console.error(err);
-});
+const startBot = async () => {
+    try {
+        console.log("⏳ 디스코드 로그인 시도 중...");
+        await client.login(TOKEN);
+        // 로그인이 성공한 후에만 포트를 엽니다.
+        app.listen(PORT, () => console.log(`[Express] Listening on port ${PORT}`));
+    } catch (err) {
+        console.error("❌ 로그인 과정에서 치명적 오류 발생:");
+        console.error(err);
+        // 에러가 나면 프로세스를 종료하여 Render가 재시작하게 만듭니다.
+        process.exit(1); 
+    }
+};
+startBot();
