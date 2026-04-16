@@ -1,4 +1,4 @@
-const { Client, GatewayIntentBits, Options } = require("discord.js");
+const { Client, GatewayIntentBits, Partials } = require("discord.js");
 const express = require("express");
 
 const app = express();
@@ -16,10 +16,14 @@ const client = new Client({
         GatewayIntentBits.GuildMessages,
         GatewayIntentBits.MessageContent
     ],
-    // 연결 타임아웃 및 재시도 옵션 추가
-    rest: { timeout: 60000 },
-    sweepers: { ...Options.DefaultSweeperSettings }
+    // [중요] 연결 안정성을 위한 파셜 및 타이머 설정
+    partials: [Partials.Channel, Partials.GuildMember, Partials.User],
+    rest: { 
+        timeout: 60000, // 응답 대기 시간을 60초로 늘림
+        retries: 5      // 실패 시 재시도 횟수 증가
+    }
 });
+client.on("debug", info => console.log(`[디버그] ${info}`));
 // 1. 특정 친구 전용 멘트
 const customMentions = {
     "349680428723994624": "주인님 어서오세요! 오늘 컨디션 어떠신가요? 🫡",
@@ -104,13 +108,10 @@ app.listen(PORT, () => {
 });
 const loginBot = async () => {
     try {
-        console.log("⏳ 디스코드 로그인 시도 중...");
-        // 디버그 모드 활성화 (이미 넣으신 부분)
-        client.on("debug", info => console.log(`[디버그] ${info}`));
-        
+        console.log("⏳ 디스코드 게이트웨이 접속 시도 중...");
         await client.login(TOKEN);
     } catch (err) {
-        console.error("❌ 로그인 실패 원인:", err.message);
+        console.error("❌ 로그인 시도 중 에러 발생:", err);
     }
 };
 
