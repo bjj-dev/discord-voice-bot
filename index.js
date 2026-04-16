@@ -10,6 +10,14 @@ app.listen(PORT, () => console.log(`Listening on port ${PORT}`));
 const TOKEN = process.env.BOT_TOKEN;
 const TEXT_CHANNEL_ID = "1313443293153067018";
 
+const client = new Client({
+    intents: [
+        GatewayIntentBits.Guilds,
+        GatewayIntentBits.GuildVoiceStates,
+        GatewayIntentBits.GuildMessages,
+        GatewayIntentBits.MessageContent
+    ]
+});
 // 1. 특정 친구 전용 멘트
 const customMentions = {
     "349680428723994624": "주인님 어서오세요! 오늘 컨디션 어떠신가요? 🫡",
@@ -37,23 +45,30 @@ const randomMessages = [
     "실력은 없지만 열정만 가득한 그분, 입장하셨습니다! 👏",
     "오늘도 팀원들 멘탈 가루로 만들 준비 되셨나요? 🌪️"
 ];
-
-const client = new Client({
-    intents: [
-        GatewayIntentBits.Guilds,
-        GatewayIntentBits.GuildVoiceStates,
-        GatewayIntentBits.GuildMessages,
-        GatewayIntentBits.MessageContent
-    ]
-});
-
+// 1. 디바운싱(중복 방지)을 위한 팁: 봇이 재시작될 때 로그가 중복되는지 확인용
 client.once("ready", () => {
-    console.log(`✅ 접속 완료: ${client.user.tag}`);
+    console.log("------------------------------------------");
+    console.log(`🚀 디스코드 봇 로그인이 완료되었습니다!`);
+    console.log(`🤖 봇 태그: ${client.user.tag}`);
+    console.log(`📡 현재 연결 상태: ${client.ws.status === 0 ? "정상(READY)" : client.ws.status}`);
+    console.log("------------------------------------------");
 });
+
+// 2. 디스코드와 연결이 끊겼을 때의 로그
+client.on("shardDisconnect", (event) => {
+    console.warn("⚠️ 디스코드 연결이 끊겼습니다:", event);
+});
+
+// 3. 에러 발생 시 로그 (토큰 문제 등)
+client.on("error", (error) => {
+    console.error("❌ 클라이언트 에러 발생:", error);
+});
+
 
 client.on("voiceStateUpdate", async (oldState, newState) => {
-    console.log("상태 변경 감지됨!");
+    console.log(`[이벤트] ${newState.member.displayName}: ${oldState.channelId || '없음'} -> ${newState.channelId || '없음'}`);
     if (!oldState.channelId && newState.channelId) {
+        console.log(`➡️ 입장 감지됨: ${newState.member.displayName}`);
         const userId = newState.member.id;
         const userDisplayName = newState.member.displayName;
         const channelName = newState.channel.name;
@@ -75,11 +90,15 @@ client.on("voiceStateUpdate", async (oldState, newState) => {
             const channel = await client.channels.fetch(TEXT_CHANNEL_ID);
             if (channel) {
                 await channel.send(finalMessage);
+                console.log("✅ 메시지 전송 완료");
             }
         } catch (err) {
             console.error("❌ 전송 실패:", err);
         }
     }
 });
-
-client.login(TOKEN);
+console.log("⏳ 디스코드 로그인 시도 중...");
+client.login(TOKEN).catch(err => {
+    console.error("❌ 로그인 실패! 토큰이 잘못되었거나 인텐트 설정 문제입니다.");
+    console.error(err);
+});
