@@ -1,5 +1,4 @@
-process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'; // 로컬/특정 환경 테스트용 (권장되지는 않으나 연결 확인용)
-const { Client, GatewayIntentBits, Partials } = require("discord.js");
+const { Client, GatewayIntentBits, Options } = require("discord.js");
 const express = require("express");
 
 const app = express();
@@ -10,7 +9,33 @@ app.get("/", (req, res) => res.send("Bot is alive!"));
 const TOKEN = process.env.BOT_TOKEN;
 const TEXT_CHANNEL_ID = "1313443293153067018";
 
-const client = new Client({ intents: [GatewayIntentBits.Guilds], partials: [Partials.Channel] }); 
+const client = new Client({
+    intents: [
+        GatewayIntentBits.Guilds,
+        GatewayIntentBits.GuildVoiceStates,
+        GatewayIntentBits.GuildMessages,
+        GatewayIntentBits.MessageContent
+    ],
+    // v14에서 발생할 수 있는 캐시 및 연결 지연 방지 설정
+    makeCache: Options.cacheWithLimits({
+        MessageManager: 0,
+    }),
+    sweepers: {
+        ...Options.DefaultSweeperSettings,
+        messages: {
+            interval: 3600,
+            lifetime: 1800,
+        },
+    },
+    // 게이트웨이 속성 강제 지정 (일부 클라우드 환경 해결책)
+    ws: {
+        properties: {
+            os: 'linux',
+            browser: 'discord.js',
+            device: 'discord.js'
+        }
+    }
+});
 
 client.on("debug", info => console.log(`[디버그] ${info}`));
 // 1. 특정 친구 전용 멘트
