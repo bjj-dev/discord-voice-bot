@@ -66,7 +66,7 @@ const randomMessages = [
     "오늘도 팀원들 멘탈 가루로 만들 준비 되셨나요? 🌪️"
 ];
 // 1. 디바운싱(중복 방지)을 위한 팁: 봇이 재시작될 때 로그가 중복되는지 확인용
-client.once("ready", () => {
+client.once("clientReady", () => {
     console.log("------------------------------------------");
     console.log(`🚀 디스코드 봇 로그인이 완료되었습니다!`);
     console.log(`🤖 봇 태그: ${client.user.tag}`);
